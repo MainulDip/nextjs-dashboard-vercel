@@ -1,5 +1,7 @@
-## Next.js App Router Course - Starter
-
-This is the starter template for the Next.js App Router Course. It contains the starting code for the dashboard application
-
-For more information, see the [course curriculum](https://nextjs.org/learn) on the Next.js Website.
+### API Endpoints | Route Handlers:
+Route Handlers are defined in a route.js|ts file inside the app directory. They are the equivalent of API Routes inside the pages directory but both will not work together.
+```ts
+// app/api/route.ts
+export const dynamic = 'force-dynamic' // defaults to auto
+export async function GET(request: Request) {}
+```

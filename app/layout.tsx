@@ -1,4 +1,3 @@
-// import '../app/ui/global.css';
 import '@/app/ui/global.css';
 import { inter } from './ui/fonts';
 
