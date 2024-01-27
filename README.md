@@ -67,3 +67,18 @@ export async function fetchRevenue() {
   // ...
 }
 ```
+
+### Streaming (non blocking progressive data fetching) | loading.tsx and Suspense:
+Streaming is a data transfer technique that allows you to break down a route into smaller "chunks" and progressively stream (parallel fetch) them from the server to the client as they become ready. Like breaking down a complex component into dynamic (fetch data) and static component, and use placeholder UI (like `loading.tsx`) until dynamic component is ready with data from the database. 
+
+* 2 ways to implement streaming in NextJS, using page level `loading.tsx` and using `<Suspense>` for component specific procedure.
+
+* `loading.tsx` is a special NextJS file built on React Suspense, it's to create fallback UI to show as a replacement while page content loads. This is supplied automatically By NextJS while the `page.tsx` is on loading condition for server components (if not market with `use client`). Static components defined on `layout.tsx` will not be affected.
+
+```jsx
+import DashboardSkeleton from '@/app/ui/skeletons';
+ 
+export default function Loading() {
+  return <DashboardSkeleton />; // this with be shown until server components are available in the `page.tsx`
+}
+```
