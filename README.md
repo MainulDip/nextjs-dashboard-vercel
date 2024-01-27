@@ -50,3 +50,20 @@ export async function fetchCardData() {
   }
 }
 ```
+
+### Static Vs Dynamic Rendering of DB Queries:
+With static rendering, data fetching and rendering happens on the server at build time, and results are cached. So can be used by CDN. Dynamic Rendering is opposite, fetch and serve query on-demand.
+
+By Default, `sql` form `'@vercel/postgres'` uses Static Rendering. To use Dynamic part, we need to use `unstable_noStore` from `'next/cache'` and call.
+
+```js
+import { unstable_noStore as noStore } from 'next/cache';
+ 
+export async function fetchRevenue() {
+  // making the request `Dynamic` and Stopping Cache
+  // This is equivalent to in fetch(..., {cache: 'no-store'}).
+  noStore();
+ 
+  // ...
+}
+```

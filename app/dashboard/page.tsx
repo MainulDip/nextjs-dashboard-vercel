@@ -6,10 +6,9 @@ import { fetchCardData, fetchLatestInvoices, fetchRevenue } from '../lib/data';
 
 export default async function Page() {
 
-    // const totalPaidInvoices = 0;
-    // const totalPendingInvoices = 0;
-    // const numberOfInvoices = 0;
-    // const numberOfCustomers = 0;
+    await new Promise<void>((resolve) => setTimeout(()=>resolve(), 1000));
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+
     const revenue  = await fetchRevenue();
     // console.log(revenue)
     const latestInvoices = await fetchLatestInvoices();
