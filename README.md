@@ -82,3 +82,13 @@ export default function Loading() {
   return <DashboardSkeleton />; // this with be shown until server components are available in the `page.tsx`
 }
 ```
+
+### Route Groups | `(directory)`:
+Route Groups are created using folder with surrounding parentheses `()`, it used to organize files into logical groups without affecting the URL structure. Like `/dashboard/(overview)/page.tsx` becomes `/dashboard`, 
+
+Also anything inside layout group is scoped to that url/route. Like in case of placing `loading.tsx` inside route groupe, will not pass it to its child route. 
+
+### Suspense for granular control over Streaming specific components:
+React Suspense can be used to stream specific components instead of streaming a whole page.
+
+Suspense allows defer rendering parts of an application until some condition is met (e.g. data is loaded). dynamic components can be wrapped in Suspense. Then, pass it a fallback component to show while the dynamic component loads.
