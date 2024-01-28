@@ -88,7 +88,25 @@ Route Groups are created using folder with surrounding parentheses `()`, it used
 
 Also anything inside layout group is scoped to that url/route. Like in case of placing `loading.tsx` inside route groupe, will not pass it to its child route. 
 
-### Suspense for granular control over Streaming specific components:
+### Suspense (with `unstable_noStore`) for granular control over Streaming specific components:
 React Suspense can be used to stream specific components instead of streaming a whole page.
 
 Suspense allows defer rendering parts of an application until some condition is met (e.g. data is loaded). dynamic components can be wrapped in Suspense. Then, pass it a fallback component to show while the dynamic component loads.
+
+```tsx
+// Async/Await Promise Should be called with `unstable_noStore` inside `RevenueCart` component
+<Suspense fallback={<RevenueChartSkeleton/>}>
+  <RevenueChart something={ok_to_receive_something_from_its_parent}/> 
+</Suspense>
+```
+
+### Partial PreRendering | Applied Automatically When Dynamic Components are Wrapped In Suspense:
+Currently, call to a dynamic function inside a route (e.g. noStore(), cookies(), etc), make entire route dynamic.
+
+However, most routes are not fully static or dynamic. You may have a route that has both static and dynamic content. Like e-commerce site where majority of the product page is static, but cart and product recommendation are fetched dynamically.
+
+Partial Prerendering leverages React's `Concurrent APIs` and uses `Suspense` to defer rendering parts of your application until some condition is met (e.g. data is loaded).
+
+* Partial Pre-Rendering is applied automatically by NextJS, As long as Suspense is used to wrap the dynamic parts. Next.js will know which parts of the route are static and which are dynamic.
+
+### Search and Pagination:
