@@ -239,4 +239,4 @@ const handleSearch = useDebouncedCallback((props) => {
   // call inner block or a function
 }, 300);
 ```
-* here the inner block / function will only run after a specific time (300ms) of last call, in between call will be canaled
+* here the inner block / function will only run after a specific time (300ms) after last call, calling within 300ms will be ignored
