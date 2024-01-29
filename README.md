@@ -109,4 +109,134 @@ Partial Prerendering leverages React's `Concurrent APIs` and uses `Suspense` to 
 
 * Partial Pre-Rendering is applied automatically by NextJS, As long as Suspense is used to wrap the dynamic parts. Next.js will know which parts of the route are static and which are dynamic.
 
-### Search and Pagination:
+### Search and Pagination | `useSearchParams` | `usePathname` | `useRouter`:
+
+`useSearchParams` -> allows to access current URL parameters. IE, search params for this URL `/dashboard/invoices?page=1&query=pending` will be `{page: '1', query: 'pending'}`
+
+`usePathname` -> lets to read current URL pathname, ie, pathname of `/dashboard/invoices?page=1&query=pending` is `/dashboard/invoices`
+
+`useRouter` -> enable navigation between routes/URL programmatically.
+
+* import all of those form `import { usePathname, useSearchParams, useRouter } from 'next/navigation';` not from other places
+
+```tsx
+// page.tsx
+// when Page is a Server Component (by Default), optional `params` and `searchParams` are available automatically
+// docs -> https://nextjs.org/docs/app/api-reference/file-conventions/page
+export default async function Page({ searchParams }: {
+    searchParams?: {
+        query?: string,
+        page?: string
+    }
+}) {
+    const query = searchParams?.query || '';
+    const currentPage = Number(searchParams?.page) || 1;
+
+    return (
+        <div className="w-full">
+            <div className="flex w-full">
+                <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+            </div>
+            <div className="mt-4 flex">
+                <Search placeholder="Search invoices..." />
+                <CreateInvoice />
+            </div>
+            <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+                <Table query={query}
+                    currentPage={currentPage}
+                />
+            </Suspense>
+            <div className="mt-5 flex w-full">
+                {/* <Pagination totalPages={totalPages} /> */}
+            </div>
+        </div>
+    );
+}
+
+// search.tsx
+'use client'
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+
+export default function Search({ placeholder }: { placeholder: string }) {
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const {replace} = useRouter();
+
+  function handleClick(term: string) {
+    const params = new URLSearchParams(searchParams)
+    if(term) {
+      params.set('query', term)
+    } else {
+      params.delete('query')
+    }
+
+    const urlRoute = `${pathname}?${params.toString()}`
+
+    replace(urlRoute) // updates the URL with the user's search data without reloading the page
+
+    console.log(term)
+    console.log(params.toString())
+    console.log(urlRoute)
+  }
+
+  return (
+    <div className="relative flex flex-1 flex-shrink-0">
+      <label htmlFor="search" className="sr-only">
+        Search
+      </label>
+      <input
+        className="peer block w-full"
+        placeholder={placeholder}
+        onChange={(e) => handleClick(e.target.value)}
+        defaultValue={searchParams.get('query')?.toString()} 
+        // will persist input field on page refresh/reload
+      />
+    </div>
+  );
+}
+```
+
+### useSearchParams() hook vs. the searchParams prop:
+`searchParams` is only available as `Page()` prop when `page.tsx` is a server component.
+`useSearchParams` is only available inside client components. As hooks are only available inside `use client` 
+
+### Page.tsx and its props as Server Component:
+when Page is a Server Component (by Default), optional `params` and `searchParams` are available automatically
+docs -> https://nextjs.org/docs/app/api-reference/file-conventions/page
+
+```tsx
+export default function Page({
+  params,
+  searchParams,
+}: {
+  params: { slug: string },
+  searchParams?: {
+        query?: string,
+        page?: string
+    }
+}) {
+  return <h1>My Page</h1>
+}
+```
+
+### `Debouncing`, Optimizing Database Fetching and `use-debounce` library:
+`Debouncing` is a programming practice that limits the rate at which a function can fire. 
+
+Implementing Debouncing:
+- Trigger Event: When an event that should be debounced (like a keystroke in the search box) occurs, a timer starts.
+- Wait: If a new event occurs before the timer expires, the timer is reset.
+- Execution: If the timer reaches the end of its countdown, the debounced function is executed.
+
+This can be implemented manually, but there is `use-debounce` npm package, to make thing easier.
+
+```tsx
+import { useDebouncedCallback } from 'use-debounce';
+ 
+// useDebounceCallback cannot be from from inside a function, as it is a hook (3rd party / custom hook)
+const handleSearch = useDebouncedCallback((props) => {
+  // call inner block or a function
+}, 300);
+```
+* here the inner block / function will only run after a specific time (300ms) of last call, in between call will be canaled
