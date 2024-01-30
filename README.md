@@ -245,3 +245,35 @@ const handleSearch = useDebouncedCallback((props) => {
 Browser has some APIs to load a page without doing a full/hard refresh. In nextJS, this is done using `replace` of `useRouter()` from `/next/navigation`.
 
 * It will trigger a re-render (server/client) of the Route, so the `Page()` component will run again and can collect changed/new urlParameters from the url and we can  do a lot of things with this, like implementing pagination through fetching form database from server component or filtering form client component.
+
+Inspect <a href="./app/dashboard/invoices/page.tsx">/dashboard/invoices/page.tsx</a> & <a href="./app/ui/invoices/pagination.tsx">/ui/invoices/pagination.tsx</a>
+
+### Data Mutation,, Form and `React Server Actions`:
+`React Server Actions` are to run asynchronous code directly on the server, eliminating the need to create API endpoints to mutate data. With this asynchronous functions execute on the server and can be invoked from Client or Server Components.
+
+Security is achieved through techniques like `POST requests`, `encrypted closures`, `strict input checks`, `error message hashing`, and `host restrictions`
+
+* `<form>` with Server Actions: `action` attribute in the `<form>` element is used to invoke an action, which will receive `FormData` object with the captured/form data
+
+```tsx
+// Server Component
+export default function Page() {
+  // Action
+  async function create(formData: FormData) {
+    'use server';
+ 
+    // Logic to mutate data...
+  }
+ 
+  // Invoke the action using the "action" attribute
+  return <form action={create}>...</form>;
+}
+```
+
+in React, the action attribute is considered a special prop - meaning React builds on top of it to allow actions to be invoked.
+
+Behind the scenes, Server Actions create a POST API endpoint, so no need to create API endpoints manually with Server Actions.
+
+* An advantage of invoking a Server Action within a Server Component is `progressive enhancement` - forms work even if JavaScript is disabled on the clients
+
+`caching` and Server Actions: When a form is submitted through a Server Action, not only can you use the action to mutate data, but you can also revalidate the associated cache using APIs like revalidatePath and revalidateTag.
