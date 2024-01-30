@@ -240,3 +240,8 @@ const handleSearch = useDebouncedCallback((props) => {
 }, 300);
 ```
 * here the inner block / function will only run after a specific time (300ms) after last call, calling within 300ms will be ignored
+
+### Pagination:
+Browser has some APIs to load a page without doing a full/hard refresh. In nextJS, this is done using `replace` of `useRouter()` from `/next/navigation`.
+
+* It will trigger a re-render (server/client) of the Route, so the `Page()` component will run again and can collect changed/new urlParameters from the url and we can  do a lot of things with this, like implementing pagination through fetching form database from server component or filtering form client component.

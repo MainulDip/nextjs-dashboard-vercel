@@ -6,6 +6,9 @@ import { useDebouncedCallback } from 'use-debounce';
 
 export default function Search({ placeholder }: { placeholder: string }) {
 
+  console.log("rerendering Page() in dashboard/invoice, logging from client")
+  // note, changing browser url (using replace:useRouter) will rerender the Page() component
+
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const {replace} = useRouter();
@@ -22,7 +25,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
 
     const urlRoute = `${pathname}?${params.toString()}`
 
-    replace(urlRoute) // updates the URL with the user's search data without reloading the page
+    replace('/dashboard') // updates the URL with the user's search data without reloading the page
 
     console.log(term)
     console.log(params.toString())
