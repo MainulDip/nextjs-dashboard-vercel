@@ -400,3 +400,44 @@ const NoIDRecipe = Recipe.omit({ id: true });
 type NoIDRecipe = z.infer<typeof NoIDRecipe>;
 // => { name: string, ingredients: string[] }
 ```
+
+### NextJS form validation with `Zod` and RevalidatePath to clean cache:
+```js
+const FormSchema = z.object({
+  id: z.string(),
+  customerId: z.string(),
+  amount: z.coerce.number(),
+  status: z.enum(['pending', 'paid']),
+  date: z.string(),
+});
+
+const CreateInvoice = FormSchema.omit({id: true, date: true}) // removing id & date prop for now
+ 
+export async function createInvoice(formData: FormData) {
+  const {customerId, amount, status} = CreateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  })
+
+  const amountInCents = amount * 100;
+  const date = new Date().toISOString().split('T')[0];
+
+  await sql`
+  INSERT INTO invoices (customer_id, amount, status, date)
+  VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+  `;
+
+  // clear cache --forced, as NextJS imply caches through `Client-side Router Cache` that store the route segments in browser
+  // with prefetching technique. revalidatePath('route') will force clear cache and trigger db query on that specified route.
+  revalidatePath('/dashboard/invoices');
+
+  redirect('/dashboard/invoices') // triggering a redirect
+}
+```
+
+### NextJS Caching:
+https://nextjs.org/docs/app/building-your-application/caching#router-cache
+
+### Dynamic Route Segment `[id]`:
+dynamic route segments are created by wrapping a folder's name in square brackets. For example, [id], [post] or [slug]. like `/dashboard/invoices/[id]/edit/page.tsx`

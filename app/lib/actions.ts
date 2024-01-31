@@ -1,10 +1,11 @@
 'use server';
 
 import { z } from "zod";
-import { CreateInvoice } from '../ui/invoices/buttons';
-import { createInvoice } from '@/app/lib/actions';
+// import { CreateInvoice } from '../ui/invoices/buttons';
+// import { createInvoice } from '@/app/lib/actions';
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 const FormSchema = z.object({
   id: z.string(),
@@ -34,6 +35,8 @@ export async function createInvoice(formData: FormData) {
   // clear cache --forced, as NextJS imply caches through `Client-side Router Cache` that store the route segments in browser
   // with prefetching technique. revalidatePath('route') will force clear cache and trigger db query on that specified route.
   revalidatePath('/dashboard/invoices');
+
+  redirect('/dashboard/invoices') // triggering a redirect
 }
 
 // export async function createInvoice(formData: FormData) {
