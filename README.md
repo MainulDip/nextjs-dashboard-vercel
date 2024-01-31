@@ -265,8 +265,11 @@ export default function Page() {
     // Logic to mutate data...
   }
  
-  // Invoke the action using the "action" attribute
-  return <form action={create}>...</form>;
+  // Invoke the action using the "action" attribute, the create fn's formData param will be populated with the user input data and start fn call once submit btn is pressed
+  return (<form action={create}>
+            <input {...params}/>
+            <Button type="submit">Submit</Button>
+          </form>);
 }
 ```
 
@@ -277,3 +280,93 @@ Behind the scenes, Server Actions create a POST API endpoint, so no need to crea
 * An advantage of invoking a Server Action within a Server Component is `progressive enhancement` - forms work even if JavaScript is disabled on the clients
 
 `caching` and Server Actions: When a form is submitted through a Server Action, not only can you use the action to mutate data, but you can also revalidate the associated cache using APIs like revalidatePath and revalidateTag.
+
+### `Zod` Lib for type validation (user form input collection & validation):
+Zod is a TypeScript-first validation library.
+
+It has primitive type (string, boolean, number, etc) functions, `parse` and `safeParse` for parsing and validation, `coerce` for type conversion, `object` for defining complex type
+
+ie, `z.coerce.string()` to make any type into string. coerce: to compel by force
+Docs => https://zod.dev/?id=basic-usage
+
+```js
+import { z } from "zod";
+
+// creating a schema for strings
+const mySchema = z.string();
+
+// parsing
+mySchema.parse("tuna"); // => "tuna"
+mySchema.parse(12); // => throws ZodError
+
+// "safe" parsing (doesn't throw error if validation fails)
+mySchema.safeParse("tuna"); // => { success: true; data: "tuna" }
+mySchema.safeParse(12); // => { success: false; error: ZodError }
+
+// complex type
+const FormSchema = z.object({
+  id: z.string(),
+  customerId: z.string(),
+  amount: z.coerce.number(),
+  status: z.enum(['pending', 'paid']),
+  date: z.string(),
+});
+
+const User = z.object({
+  username: z.string(),
+});
+
+User.parse({ username: "Ludwig" });
+
+// extract the inferred type
+type User = z.infer<typeof User>; // { username: string }
+```
+
+* Coercion
+
+```js
+const schema = z.coerce.string();
+schema.parse("tuna"); // => "tuna"
+schema.parse(12); // => "12"
+schema.parse(true); // => "true"
+```
+
+* validation helpers: 
+
+```js
+const name = z.string({
+  required_error: "Name is required",
+  invalid_type_error: "Name must be a string",
+});
+
+// .min(5, { message: "error case" });
+// .max(5);
+// .length(5);
+// .email();
+// .url();
+// .emoji();
+// .uuid();
+// .includes("tuna", { message: "Must include tuna" });
+// .startsWith("https://", { message: "Must provide secure URL" });
+// .endsWith(".com", { message: "Only .com domains allowed" });
+// .datetime({ message: "Invalid datetime string! Must be UTC." });
+// .ip({ message: "Invalid IP address" });
+
+```
+
+* Date and DateTime Validation
+
+```js
+const datetime = z.string().datetime();
+
+datetime.parse("2020-01-01T00:00:00Z"); // pass
+datetime.parse("2020-01-01T00:00:00.123Z"); // pass
+datetime.parse("2020-01-01T00:00:00.123456Z"); // pass (arbitrary precision)
+datetime.parse("2020-01-01T00:00:00+02:00"); // fail (no offsets allowed)
+
+// date
+z.date().safeParse(new Date()); // success: true
+z.date().safeParse("2022-01-12T00:00:00.000Z"); // success: false
+```
+
+Docs => https://zod.dev/?id=basic-usage
