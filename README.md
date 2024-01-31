@@ -261,13 +261,25 @@ export default function Page() {
   // Action
   async function create(formData: FormData) {
     'use server';
- 
-    // Logic to mutate data...
+    const rawFormData = {
+      fieldName: formData.get('fieldName') // the field name will be passed form from once that is submitted
+    };
+
+    // const rawFormData = Object.fromEntries(formData.entries()) // concise way to extract form data
+
+    console.log(rawFormData);
+   /* output
+   {
+      customerId: '50ca3e18-62cd-11ee-8c99-0242ac120002',
+      amount: '',
+      status: null
+    }
+    */
   }
  
   // Invoke the action using the "action" attribute, the create fn's formData param will be populated with the user input data and start fn call once submit btn is pressed
   return (<form action={create}>
-            <input {...params}/>
+            <input name="fieldName" {...otherParams}/>
             <Button type="submit">Submit</Button>
           </form>);
 }
@@ -370,3 +382,21 @@ z.date().safeParse("2022-01-12T00:00:00.000Z"); // success: false
 ```
 
 Docs => https://zod.dev/?id=basic-usage
+
+* `.pick` (keep certain keys) & `.omit` (remove certain keys)
+```js
+const Recipe = z.object({
+  id: z.string(),
+  name: z.string(),
+  ingredients: z.array(z.string()),
+});
+
+const JustTheName = Recipe.pick({ name: true });
+type JustTheName = z.infer<typeof JustTheName>;
+// => { name: string }
+
+const NoIDRecipe = Recipe.omit({ id: true });
+
+type NoIDRecipe = z.infer<typeof NoIDRecipe>;
+// => { name: string, ingredients: string[] }
+```
