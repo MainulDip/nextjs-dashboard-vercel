@@ -436,7 +436,7 @@ export async function createInvoice(formData: FormData) {
 }
 ```
 
-### NextJS Caching:
+### NextJS Caching
 https://nextjs.org/docs/app/building-your-application/caching#router-cache
 
 ### Dynamic Route Segment `[id]`:
