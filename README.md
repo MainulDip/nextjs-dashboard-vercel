@@ -441,3 +441,76 @@ https://nextjs.org/docs/app/building-your-application/caching#router-cache
 
 ### Dynamic Route Segment `[id]`:
 dynamic route segments are created by wrapping a folder's name in square `[....]` brackets. For example, [id], [post] or [slug]. like `/dashboard/invoices/[id]/edit/page.tsx`.
+
+
+### `try/catch`, `error.tsx` and Error Handling:
+All database queries should be wrapped in try/catch block in side server actions
+```js
+try {
+    await sql`
+        UPDATE invoices
+        SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+        WHERE id = ${id}
+      `;
+} catch (error) {
+    return { message: 'Database Error: Failed to Update Invoice.' };
+}
+```
+
+* `error.tsx` => used to define a UI boundary for a route segment. It serves as a catch-all for unexpected errors and allows you to display a fallback UI to your users. As the error will show on front-end, it must be `'use client'`. All routes inside of it (children routes) will fall back to parent's `error.tsx` when error is triggered. like failed `try` block or something like `throw new Error('Message');`
+
+```tsx
+// error.tsx example
+'use client'
+import { useEffect } from "react";
+
+export default function Error({ error, reset }:
+    { error: Error & { digest?: string }, reset: () => void }
+) {
+    useEffect(() => {
+        // Optionally log the error to an error reporting service
+        console.error(error);
+    }, [error]);
+
+    return (
+        <main className="flex h-full flex-col items-center justify-center">
+            <h2 className="text-center">Something went wrong!</h2>
+            <button
+                className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-400"
+                onClick={
+                    // Attempt to recover by trying to re-render the invoices route
+                    () => reset()
+                }
+            >
+                Try again
+            </button>
+        </main>
+    );
+}
+```
+
+* 404 errors, `notFound Function` and `not-found.tsx` => While error.tsx is useful for catching all errors, notFound can be used when you try to fetch a resource that doesn't exist. Note, `notFound()` call will not work with `throw new Error("")`. throw error will call/render the `error.tsx`. Usually notFound is called manually, (`if (condition) notFound()`)
+
+`NotFound()` is a reserved component name to use in `not-found.tsx`, like Page, Error, Layout etc
+
+```tsx
+if (!invoice) {
+  notFound();
+}
+
+// will trigger not-found.tsx, Demo 
+export default function NotFound() {
+  return (
+    <main className="flex h-full flex-col">
+      <h2 className="text-xl font-semibold">404 Not Found</h2>
+      <p>Could not find the requested invoice.</p>
+     </main>
+  );
+}
+```
+
+### Accessibility in NextJS App:
+
+### Server Side Form Validation:
+
+### `useFormState` to handle form error:
