@@ -510,6 +510,24 @@ export default function NotFound() {
 ```
 
 ### Accessibility in NextJS App:
+Overall accessibility improvement focus on keyboard navigation, semantic HTML, images, colors, videos, etc. For comprehensive guide on this topic can be found here https://web.dev/learn/accessibility/
+
+* `eslint-plugin-jsx-ally` plugin is included by default with NextJS, which provide warning on accessibility issues on topics like `image alt text` and `role` attribute, ect.
+
+* Running `eslint-plugin-jsx-ally` => as its built into NextJS, use next to call it. Add cmd inside scripts as `"lint": "next lint"` -> `npm init @eslint/config` to create config file `.eslintrc.json` (or add manually), modify config file as necessary and run `npm run link`.
+
+* eslint => https://eslint.org/docs/latest/use/getting-started
+
+```json
+// example .eslintrc.json file with next js
+{
+    "extends": "next/core-web-vitals",
+    "rules": {
+        "semi": ["warn", "always"],
+        "quotes": ["warn", "double"] // can be `off` and `error` also
+    }
+}
+```
 
 ### Server Side Form Validation:
 
