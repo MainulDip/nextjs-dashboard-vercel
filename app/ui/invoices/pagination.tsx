@@ -62,6 +62,7 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
   );
 }
 
+
 function PaginationNumber({
   page,
   href,

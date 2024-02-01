@@ -1,8 +1,6 @@
 'use server';
 
 import { z } from "zod";
-// import { CreateInvoice } from '../ui/invoices/buttons';
-// import { createInvoice } from '@/app/lib/actions';
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -34,9 +32,9 @@ export async function createInvoice(formData: FormData) {
 
   // clear cache --forced, as NextJS imply caches through `Client-side Router Cache` that store the route segments in browser
   // with prefetching technique. revalidatePath('route') will force clear cache and trigger db query on that specified route.
-  revalidatePath('/dashboard/invoices');
+  revalidatePath('/dashboard/invoices'); // also it will re-render/re-compose the route specified, which will update UI Screen
 
-  redirect('/dashboard/invoices') // triggering a redirect
+  redirect('/dashboard/invoices') // triggering a redirect to the updated page. Where updates are applied ahead of time already
 }
 
 // export async function createInvoice(formData: FormData) {
@@ -78,4 +76,13 @@ export async function updateInvoice(id: string, formData: FormData) {
  
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
+}
+
+export async function deleteInvoice(id: string) {
+  await sql`
+    DELETE FROM invoices
+    WHERE id = ${id}
+  `;
+ 
+  revalidatePath('/dashboard/invoices'); // will clear cache, re-render the route and update UI screen
 }

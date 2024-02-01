@@ -430,9 +430,9 @@ export async function createInvoice(formData: FormData) {
 
   // clear cache --forced, as NextJS imply caches through `Client-side Router Cache` that store the route segments in browser
   // with prefetching technique. revalidatePath('route') will force clear cache and trigger db query on that specified route.
-  revalidatePath('/dashboard/invoices');
+  revalidatePath('/dashboard/invoices'); // also it will re-render/re-compose the route specified, which will update UI Screen
 
-  redirect('/dashboard/invoices') // triggering a redirect
+  redirect('/dashboard/invoices') // triggering a redirect to the updated page. Where updates are applied ahead of time already
 }
 ```
 
@@ -440,4 +440,4 @@ export async function createInvoice(formData: FormData) {
 https://nextjs.org/docs/app/building-your-application/caching#router-cache
 
 ### Dynamic Route Segment `[id]`:
-dynamic route segments are created by wrapping a folder's name in square brackets. For example, [id], [post] or [slug]. like `/dashboard/invoices/[id]/edit/page.tsx`
+dynamic route segments are created by wrapping a folder's name in square `[....]` brackets. For example, [id], [post] or [slug]. like `/dashboard/invoices/[id]/edit/page.tsx`.
