@@ -635,5 +635,9 @@ export async function createInvoice(prevState: State, formData: FormData): Promi
 }
 ```
 
-### User Authentication:
+### User Authentication and `NextAuth.js`:
 `authentication` checks who you are, and `authorization` determines what you can do or access in the application.
+
+`NextAuth.js` is NextJS specific authentication library that abstracts away much of the complexity involved in managing sessions, sign-in and sign-out, and other aspects of authentication. Install it with `npm install next-auth@beta` (doesn't come by default). Also generate a secret key for cookie encryption by running `openssl rand -base64 32` shell and copy that in `.env` file
+
+* Note: So try manual session based authentication and also token based (JWT)
