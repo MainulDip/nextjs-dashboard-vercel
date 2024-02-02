@@ -510,9 +510,10 @@ export default function NotFound() {
 ```
 
 ### Accessibility in NextJS App:
-Overall accessibility improvement focus on keyboard navigation, semantic HTML, images, colors, videos, etc. For comprehensive guide on this topic can be found here https://web.dev/learn/accessibility/
+Overall accessibility improvement focus on keyboard navigation, semantic HTML (<input>, <option>, etc instead of <div>), `label` and `htmlfor`, Focus Outline, images `alt` and `for` attributes, colors, videos, etc. For comprehensive guide on this topic can be found here https://web.dev/learn/accessibility/.
 
-* `eslint-plugin-jsx-ally` plugin is included by default with NextJS, which provide warning on accessibility issues on topics like `image alt text` and `role` attribute, ect.
+
+* `eslint-plugin-jsx-ally` plugin is included by default with NextJS, which provide warning on accessibility issues on topics like `image alt text` and `role` attribute, ect. On development mode eslint catch errors automatically (as configured by NextJS)
 
 * Running `eslint-plugin-jsx-ally` => as its built into NextJS, use next to call it. Add cmd inside scripts as `"lint": "next lint"` -> `npm init @eslint/config` to create config file `.eslintrc.json` (or add manually), modify config file as necessary and run `npm run link`.
 
@@ -529,6 +530,110 @@ Overall accessibility improvement focus on keyboard navigation, semantic HTML, i
 }
 ```
 
+### Client Side (browser) validation using `required` inside `input` tag:
+```jsx
+<input
+  ...
+  required
+/>
+```
+
 ### Server Side Form Validation:
 
 ### `useFormState` to handle form error:
+Takes two arguments, (action, initialState), where action is the form's `server actions` and returns [state, dispatch] to form state and dispatch a function. 
+
+The module/Component calling the `useFromState` needs to be marked as `use client`, But the `action` function needs to be server side action. So if action fn is defined inside of a Client Component, it should declare `'use server'` inside of its code block.
+
+```tsx
+'use client'
+
+export default function Form({ customers }: { customers: CustomerField[] }) {
+  const initialState: State = { message: null, errors: {} };
+  const [state, dispatch] = useFormState(createInvoice, initialState);
+  return (
+    <form action={dispatch}>
+      <div className="mb-4">
+        <label htmlFor="amount">
+          Choose an amount
+        </label>
+        <div>
+          <input
+            id="amount"
+            name="amount"
+            type="number"
+            step="0.01"
+            placeholder="Enter USD amount"
+            aria-describedby="customer-error" />
+        </div>
+        <div id="invoice-error" aria-live="polite" aria-atomic="true">
+          {state.errors?.amount && state.errors?.amount.map((error: string) => (
+            <p className="mt-2 text-sm text-red-500" key={error}>
+              {error}
+            </p>
+          ))}
+        </div>
+      </div>
+    </form>
+  )
+}
+
+export type State = {
+  errors?: {
+    customerId?: string[];
+    amount?: string[];
+    status?: string[];
+  };
+  message?: string | null;
+};
+
+const FormSchema = z.object({
+  id: z.string(),
+  customerId: z.string({invalid_type_error: 'Please select a customer.',}),
+  amount: z.coerce.number().gt(0, { message: 'Please enter an amount greater than $0.' }),
+  status: z.enum(['pending', 'paid'], {invalid_type_error: 'Please select an invoice status.',}),
+  date: z.string(),
+});
+
+const CreateInvoice = FormSchema.omit({ id: true, date: true }) // removing id & date prop for now
+
+export async function createInvoice(prevState: State, formData: FormData): Promise<State> {
+  'use server'
+
+  // safeParse will return either a `success` or `error`
+  const validatedFields = CreateInvoice.safeParse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  })
+
+  // If form validation fails, return errors early. Otherwise, continue.
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Invoice.',
+    };
+  }
+
+  const { customerId, amount, status } = validatedFields.data;
+  const amountInCents = amount * 100;
+  const date = new Date().toISOString().split('T')[0];
+
+  try {
+    await sql`
+  INSERT INTO invoices (customer_id, amount, status, date)
+  VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+  `;
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to Create Invoice.',
+    };
+  }
+
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices')
+}
+```
+
+### User Authentication:
+`authentication` checks who you are, and `authorization` determines what you can do or access in the application.
