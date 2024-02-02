@@ -641,3 +641,12 @@ export async function createInvoice(prevState: State, formData: FormData): Promi
 `NextAuth.js` is NextJS specific authentication library that abstracts away much of the complexity involved in managing sessions, sign-in and sign-out, and other aspects of authentication. Install it with `npm install next-auth@beta` (doesn't come by default). Also generate a secret key for cookie encryption by running `openssl rand -base64 32` shell and copy that in `.env` file
 
 * Note: So try manual session based authentication and also token based (JWT)
+
+* NextAuth.js integration process
+
+- create login route to show form at `/login/page.tsx` for user input verification
+- create `auth.config.ts` at project root to specify singIn route and `middleware` to restrict user if not authorized for certain pages.
+- create `middleware.ts` at project root to forward configurations. The advantage of employing Middleware for this task is that the protected routes will not even start rendering until the Middleware verifies the authentication, 
+- create `auth.ts` at project root to spreads authConfig object (to do some Nodejs specific task, like match password hash). Also add `Credential Provider` (`OAuth` or `Email` or Plain Credential form `'next-auth/providers/credentials'`)
+OAuth (With Github Guide) -> https://authjs.dev/getting-started/providers/oauth-tutorial. There are other OAuth Provider, like Google, Facebook, Twitter ect.
+Email -> https://authjs.dev/getting-started/providers/email-tutorial
