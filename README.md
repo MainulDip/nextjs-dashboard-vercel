@@ -635,7 +635,7 @@ export async function createInvoice(prevState: State, formData: FormData): Promi
 }
 ```
 
-### User Authentication and `NextAuth.js`:
+### User Authentication and `NextAuth.js` (becomes `Auth.js`):
 `authentication` checks who you are, and `authorization` determines what you can do or access in the application.
 
 `NextAuth.js` is NextJS specific authentication library that abstracts away much of the complexity involved in managing sessions, sign-in and sign-out, and other aspects of authentication. Install it with `npm install next-auth@beta` (doesn't come by default). Also generate a secret key for cookie encryption by running `openssl rand -base64 32` shell and copy that in `.env` file
@@ -645,8 +645,20 @@ export async function createInvoice(prevState: State, formData: FormData): Promi
 * NextAuth.js integration process
 
 - create login route to show form at `/login/page.tsx` for user input verification
+
 - create `auth.config.ts` at project root to specify singIn route and `middleware` to restrict user if not authorized for certain pages.
-- create `middleware.ts` at project root to forward configurations. The advantage of employing Middleware for this task is that the protected routes will not even start rendering until the Middleware verifies the authentication, 
-- create `auth.ts` at project root to spreads authConfig object (to do some Nodejs specific task, like match password hash). Also add `Credential Provider` (`OAuth` or `Email` or Plain Credential form `'next-auth/providers/credentials'`)
+
+- create `middleware.ts` at project root (export NextAuth with AuthConfig and config/matcher). The advantage of employing Middleware for this task is that the protected routes will not even start rendering until the Middleware verifies the authentication
+
+  * Note => `middleware.ts` runs before request is completed (also before caching and route match) and modify the request and/or responses. See https://nextjs.org/docs/app/building-your-application/routing/middleware
+
+
+- create `auth.ts` (main script for authentication computation) at project root to spreads authConfig object (to do some Nodejs specific task, like match password hash). Also add `Credential Provider` (`OAuth` or `Email` or Plain Credential form `'next-auth/providers/credentials'`) and add the sign in functionality from there.
+
 OAuth (With Github Guide) -> https://authjs.dev/getting-started/providers/oauth-tutorial. There are other OAuth Provider, like Google, Facebook, Twitter ect.
 Email -> https://authjs.dev/getting-started/providers/email-tutorial
+Auth.js (Formerly NextAuth.js) => https://authjs.dev/getting-started/introduction
+
+
+
+- add server action which will handle login-form submission with formData for username and password and will send request to `auth.js` signIn method with form data. And throw error if failed. For Auth.js error type, see https://next-auth.js.org/errors.
