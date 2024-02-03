@@ -9,11 +9,13 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      if(isLoggedIn) return true;
       if (isOnDashboard) {
         if (isLoggedIn) return true;
         return false; // Redirect unauthenticated users to the specified url listed in pages 
       } else if (isLoggedIn) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
+        console.log("I'm there :", nextUrl)
+        return Response.redirect(new URL('/dashboard',nextUrl)); // will redirect after login
       }
       return true;
     },

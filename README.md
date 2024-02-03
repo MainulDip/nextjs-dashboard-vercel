@@ -642,6 +642,9 @@ export async function createInvoice(prevState: State, formData: FormData): Promi
 
 * Note: So try manual session based authentication and also token based (JWT)
 
+
+- NextAuth workflow: in project root, `auth.config.ts` to store configuration (callback to authorize user), `middleware.ts` to restrict page request access if not logged in and redirect to login page (will use the exported `auth.config`). `auth.ts` will also use the config and will add providers to do the Authentication and export auth, signIn, signOut handle to call from different parts of the app
+
 * NextAuth.js integration process
 
 - create login route to show form at `/login/page.tsx` for user input verification
@@ -659,6 +662,76 @@ OAuth (With Github Guide) -> https://authjs.dev/getting-started/providers/oauth-
 Email -> https://authjs.dev/getting-started/providers/email-tutorial
 Auth.js (Formerly NextAuth.js) => https://authjs.dev/getting-started/introduction
 
-
-
 - add server action which will handle login-form submission with formData for username and password and will send request to `auth.js` signIn method with form data. And throw error if failed. For Auth.js error type, see https://next-auth.js.org/errors.
+
+```ts
+// auth.config.ts
+import type { NextAuthConfig } from 'next-auth';
+ 
+// build an auth config to use by `middleware.ts` and `auth.ts`
+export const authConfig = {
+  pages: {
+    signIn: '/login', // if the callback block return false, redirect to this page
+  },
+  callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      if(isLoggedIn) return true;
+      if (isOnDashboard) {
+        if (isLoggedIn) return true;
+        return false; // Redirect unauthenticated users to the specified url listed in pages 
+      } else if (isLoggedIn) {
+        console.log("I'm there :", nextUrl)
+        return Response.redirect(new URL('/dashboard',nextUrl)); // will redirect after login
+      }
+      return true;
+    },
+  },
+  providers: [], // Add providers with an empty array for-now
+} satisfies NextAuthConfig;
+
+// satisfies is typescript's type inference feature. Here it check and ensure ts compiler that `it is NextAuthConfig Object`
+
+// middleware.ts
+export default NextAuth(authConfig).auth; // checking if authConfig coitions are satisfied or not, and do necessary steeps
+export const config = {
+  // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
+  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+};
+
+// auth.ts
+async function getUser(email: string): Promise<User | undefined> {
+  try {
+    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+    return user.rows[0];
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    throw new Error('Failed to fetch user.');
+  }
+}
+ 
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        const parsedCredentials = z
+          .object({ email: z.string().email(), password: z.string().min(6) })
+          .safeParse(credentials);
+
+          if (parsedCredentials.success) {
+            const { email, password } = parsedCredentials.data;
+            const user = await getUser(email);
+            if (!user) return null;
+
+            const passwordsMatch = await bcrypt.compare(password, user.password);
+            if (passwordsMatch) return user;
+          }
+          console.log('Invalid credentials');
+          return null;
+      },
+    }),
+  ],
+});
+```
