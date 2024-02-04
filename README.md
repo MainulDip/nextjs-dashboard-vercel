@@ -735,3 +735,60 @@ export const { auth, signIn, signOut } = NextAuth({
   ],
 });
 ```
+
+### MetaDta API:
+With NextJS's MetaData API, there are two ways to define/add metadata.
+
+1. Config Based: Export a static metadata object or a dynamic generateMetadata function in a layout.js or page.js file.
+
+2. File-based: a range of special files
+  - favicon.ico, apple-icon.jpg, and icon.jpg -> Utilized for favicons and icons
+  - `opengraph-image.jpg` and `twitter-image.jpg` -> Employed for social media images
+  - robots.txt for search engine crawling
+  - sitemap.xml: Offers information about the website's structure
+
+* There are flexibility to use these files for static metadata, or you can generate them programmatically (like using NextJS's `ImageResponse` constructor to generate dynamic images using JSX and CSS)
+
+### Favicon and Open Graph (OG) images:
+`favicon.ico` and `opengraph-image.jpg` will be automatically picked form `/app` directory. 
+
+* dynamic OG images (JSX + CSS) can be created using the ImageResponse constructor. https://nextjs.org/docs/app/api-reference/functions/image-response
+
+### Page title and description MetaData:
+Any metadata (`metadata object`) in layout.js will be inherited by all pages that use it. `page.js` can also have this object.
+
+```tsx
+import { Metadata } from 'next';
+ 
+// will be picked up automatically by NextJS 
+export const metadata: Metadata = {
+  title: 'Acme Dashboard',
+  description: 'The official Next.js Course Dashboard, built with App Router.'
+};
+ 
+export default function RootLayout() {
+  // ....
+}
+```
+
+* `metadata template` for re-usable meta data across app with placeholder to fill by child page.tsx
+
+```tsx
+// `/app/layout.tsx`
+import { Metadata } from 'next';
+
+// %s for placeholder string
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Acme Dashboard',
+    default: 'Acme Dashboard',
+  },
+  description: 'The official Next.js Learn Dashboard built with App Router.',
+  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
+};
+
+// `/app/someOtherDirectory/page.tsx
+export const metadata: Metadata = {
+  title: 'Invoices',
+};
+```
